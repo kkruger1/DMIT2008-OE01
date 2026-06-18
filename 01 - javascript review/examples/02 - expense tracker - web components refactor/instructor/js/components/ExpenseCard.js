@@ -31,20 +31,24 @@ class ExpenseCard extends HTMLElement {
         new CustomEvent(  // we can make custom events, not just 'change', 'input', 'submit', 'click', etc.
           "expense-delete", // param1: name of custom event
           {                 // param2: data/metadata for the event (packed inside an object)
+
             bubbles: true,       // bubbles true/false: event can propagate up through the DOM. if false, restricted to this component/DOM node.
-            detail:  { id },     // detail: the data/'payload' I'm sending with the event. (kind of like "event.target.value")
+
+            bubbles: true,       // bubbles true/false: event can propagate up through the DOM. if false, can't propagate above this shadow DOM boundary.
+
+            detail: { id },     // detail: the data/'payload' I'm sending with the event. (kind of like "event.target.value")
           }
-        )   
+        )
       )
     }
   };
 
   render() {
-    const title    = this.getAttribute('title')      ?? '';  // ternary: "X if X else Y", "value if value else empty string"
-    const amount   = this.getAttribute('amount')     ?? '0';
-    const date     = this.getAttribute('date')       ?? '';
-    const category = this.getAttribute('category')   ?? '';
-    const id       = this.getAttribute('expense-id');
+    const title = this.getAttribute('title') ?? '';  // ternary: "X if X else Y", "value if value else empty string"
+    const amount = this.getAttribute('amount') ?? '0';
+    const date = this.getAttribute('date') ?? '';
+    const category = this.getAttribute('category') ?? '';
+    const id = this.getAttribute('expense-id');
 
     this.className = 'card';
     this.innerHTML = `
