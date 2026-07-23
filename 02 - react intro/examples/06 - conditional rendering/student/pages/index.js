@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { MOVIE_LIST } from '../utils/movies'
 
 import Head from 'next/head'
@@ -15,7 +17,78 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 
+
+
 export default function Home() {
+
+  
+  const [searchForm, setSearchForm] = useState(
+    {
+      title: "",
+      year: "",
+    }
+  )
+
+  
+  const [movies, setMovies] = useState(MOVIE_LIST);
+
+
+  const [errorMsg, setErrorMsg] = useState("")
+
+  const handleSubmit = () => {
+    event.preventDefault();
+    validateSearch();
+    filterMovies();
+    console.log(searchForm.title);
+    console.log(searchForm.year);
+  }
+
+  const validateSearch = () => {
+    
+
+    if (!searchForm.year.trim().length) { // or year.trim().length === 0
+      
+      setErrorMsg("")
+      return
+    }
+
+    if (!isValidYear(searchForm.year)) {
+      setErrorMsg(`${searchForm.year} is not a valid year.`)
+    }
+
+  }
+
+  const filterMovies = () => {
+   
+    let filteredMovies = [...MOVIE_LIST]
+
+   
+    if (searchForm.title.trim()) {
+      filteredMovies = filteredMovies.filter(
+        (movie) => { 
+          
+          return movie.name.toLowerCase().includes(
+            searchForm.title.trim().toLowerCase()
+          )
+        }
+      )
+    }
+
+   
+    if (searchForm.year.trim()) {
+      filteredMovies = filteredMovies.filter((movie) => {
+        return movie.year === parseInt(searchForm.year.trim())
+      })
+    }
+
+    setMovies(filteredMovies);
+  }
+
+  const isValidYear = (year) => {
+   
+    return !isNaN(year) && year.trim().length === 4
+  }
+
   return (
     <div>
       <Head>
@@ -33,39 +106,72 @@ export default function Home() {
           <Typography variant="h2" component="h2" style={{textAlign: "center"}}>
             Movies
           </Typography>
-          <form style={{width: '100%'}}>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <TextField
-                  id="search-field"
-                  label="search..."
-                  variant="standard"
-                  sx={{width: '100%'}}
-                  
-                />
+            <form
+              style={{width: '100%'}}
+              onSubmit={handleSubmit}
+            >
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <TextField
+                    id="search-field"
+                    label="search..."
+                    variant="standard"
+                    value={searchForm.title}
+                    onChange={
+                      /* We need to reconstruct the whole object when writing to state (just like arrays),
+                         and the syntax is similar! Instead of [...arrayItems, newItem], we just
+                         {...object, specificProperty: newValue }
+                      */
+                      (e) => {setSearchForm(
+                        {...searchForm, title: e.target.value}
+                      )}
+                    }
+                    sx={{width: '100%'}}
+                    
+                  />
+                </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    id="year-field"
+                    label="year"
+                    variant="standard"
+                    value={searchForm.year}
+                    onChange={(e) => {setSearchForm(
+                      {...searchForm, year: e.target.value}
+                      )}}
+                    sx={{width: '100%'}}
+                   
+                  />
+                </Grid>
+                <Grid item xs={2}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                  >Filter</Button>
+                </Grid>
+                <Grid item xs={10}>
+                  { errorMsg &&
+                    <Alert severity="error">{errorMsg}</Alert>
+                  }
+                </Grid>
               </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  id="year-field"
-                  label="year"
-                  variant="standard"
-                  sx={{width: '100%'}}
-                 
-                />
-              </Grid>
-              <Grid item xs={2}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                >Filter</Button>
-              </Grid>
-              <Grid item xs={10}>
-                {/* Add the error message here*/}
-              </Grid>
-            </Grid>
-          </form>
+            </form>
           <List sx={{width: `100%`}}>
-          { MOVIE_LIST.map((movieData, index)=> {
+
+            {/* Note how this differs from the readme:
+                We only make conditional the part that changes.
+                Much cleaner & more readable code; someone else (that includes future you)
+                doesn't have to meticulously examine every line to make sure nothing else changed.
+            */}
+            <ListItem>
+              <ListItemText>
+                <Typography variant="p" component="div">
+                  { !movies.length ? "No matches found." : `${movies.length} movie results:` }
+                </Typography>
+              </ListItemText>
+            </ListItem>
+
+          { movies.map((movieData, index)=> {
               return <ListItem key={index}>
                 <ListItemText>
                   <Typography variant="p" component="div">
